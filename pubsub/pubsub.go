@@ -147,16 +147,3 @@ type Client struct {
 func (c *Client) send(message []byte) error {
 	return c.Conn.WriteMessage(websocket.TextMessage, message)
 }
-
-func (c *Client) readPump() {
-	for {
-		messageType, p, err := c.Conn.ReadMessage()
-		if err != nil {
-			log.Println("Something went wrong")
-			pubSubManager.RemoveClient(c)
-			break
-		}
-		
-		pubSubManager.HandleReceivedMessage(c, messageType, p)
-	}
-}

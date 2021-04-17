@@ -13,6 +13,19 @@ var upgrader = websocket.Upgrader{
 
 var pubSubManager = PubSub{}
 
+func readPump(client *Client) {
+	for {
+		messageType, p, err := client.Conn.ReadMessage()
+		if err != nil {
+			log.Println("Something went wrong")
+			pubSubManager.RemoveClient(client)
+			break
+		}
+		
+		pubSubManager.HandleReceivedMessage(client, messageType, p)
+	}
+}
+
 func ServeWS(w http.ResponseWriter, req *http.Request) {
 	upgrader.CheckOrigin = func(req *http.Request) bool {
 		return true
@@ -24,5 +37,5 @@ func ServeWS(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	client := pubSubManager.NewClient(conn)
-	client.readPump()
+	readPump(client)
 }
